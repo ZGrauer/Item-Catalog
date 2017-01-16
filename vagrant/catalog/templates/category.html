@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catalog">
+    <title class="name">Category - {{category.name}}</title>
+    <link rel="stylesheet" href= "{{ url_for('static',filename='css/bootstrap.min.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
+    <link rel="stylesheet" href= "{{ url_for('static',filename='css/style.css') }}" >
+    <script src="{{ url_for('static',filename='js/jquery-3.1.1.min.js') }}" defer></script>
+    <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}" defer></script>
+    <script src="{{ url_for('static',filename='js/custom.js') }}" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="row">
+        <div class="col-xs-8">
+          <h1 class="title">Item Catalog</h1>
+        </div>
+        <div class="col-xs-4 text-right">
+          <a href="{{url_for('categories')}}" class="btn btn-default btn-top-btm btn-lg" id="btn-home" role="button" data-toggle="tooltip" data-placement="bottom" title="Home"><span class="glyphicon glyphicon-home"></span></a>
+          <!-- if not logged in, display "login" button -->
+          <!-- else show the user's profile pic as logout button -->
+          {% if "username" not in login_session %}
+            <a href="{{url_for('showLogin')}}" class="btn btn-default btn-top-btm btn-lg" id="btn-login" role="button" data-toggle="tooltip" data-placement="bottom" title="Login">Login</a>
+          {% else %}
+            <a href="{{url_for('disconnect')}}" data-toggle="tooltip" data-placement="bottom" title="Logout">
+              <img src="{{login_session['picture']}}" class="user-img" alt="User's Profile Picture"/>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+
+    <main>
+      <!-- Displays any "flash" messages from Python server -->
+      <!-- Shown as Bootstrap dismissible alert -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert alert-success alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          {% for message in messages %}
+            <span class="flash-message">{{message}}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      <div class="row">
+        <section>
+          <div class="list-group col-xs-5">
+            <h3>Categories</h3>
+            <!-- List all categories on left -->
+            {% for c in categories %}
+              <div class="row">
+                <div class="col-md-9 category-list">
+                  <!-- If showing items from this category, list as active on screen -->
+                  <!-- else create list to other category -->
+                  {% if category.id == c.id %}
+                      <strong class="list-group-item list-group-item-action active">{{c.name}}</strong>
+                  {% else %}
+                    <a href="{{url_for('items', category_id = c.id)}}" class="list-group-item list-group-item-action" data-toggle="tooltip" title="List Items">
+                      <strong>{{c.name}}</strong>
+                    </a>
+                  {% endif %}
+                </div>
+                <!-- If the current user created the category, show Edit and Delete buttons -->
+                {% if c.user_id == login_session['user_id'] %}
+                  <div class="col-md-3">
+                    <a href="{{url_for('editCategory', category_id = c.id)}}" class="btn btn-default btn-sm btn-left-right" role="button" data-toggle="tooltip" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
+                    <a href="{{url_for('deleteCategory', category_id = c.id)}}" class="btn btn-danger btn-sm btn-left-right" role="button" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+        <section>
+          <div class="list-group col-xs-7">
+            <h3>{{category.name}} Items ({{items.count()}})
+              <!-- If the current user created the category, show New Item button -->
+              {% if category.user_id == login_session['user_id'] %}
+                <a href="{{url_for('newItem', category_id = category.id)}}" class="btn btn-primary btn-sm btn-top-btm" role="button" data-toggle="tooltip" title="Create New Item"><span class="glyphicon glyphicon-plus"></span></a>
+              {% endif %}
+            </h3>
+
+            <!-- List all items from category on right -->
+            {% for item in items %}
+              <div class="row">
+                <div class="col-md-9 category-list">
+                  <a href="{{url_for('viewItem', category_id = item.category_id, item_id = item.id)}}" class="list-group-item list-group-item-action" data-toggle="tooltip" title="View Item">
+                    <strong>{{item.name}}</strong>
+                  </a>
+                </div>
+                <!-- If the current user created the item, show Edit and Delete buttons -->
+                {% if item.user_id == login_session['user_id'] %}
+                  <div class="col-md-3">
+                    <a href="{{url_for('editItem', category_id = item.category_id, item_id = item.id)}}" class="btn btn-default btn-left-right" role="button" data-toggle="tooltip" title="Edit"><span class="glyphicon glyphicon-edit"></span></a>
+                    <a href="{{url_for('deleteItem', category_id = item.category_id, item_id = item.id)}}" class="btn btn-danger btn-left-right" role="button" data-toggle="tooltip" title="Delete"><span class="glyphicon glyphicon-trash"></span></a>
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

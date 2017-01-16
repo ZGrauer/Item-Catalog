@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catalog">
+    <title class="name">Item Catalog - Login</title>
+    <link rel="stylesheet" href= "{{ url_for('static',filename='css/bootstrap.min.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
+    <link rel="stylesheet" href= "{{ url_for('static',filename='css/style.css') }}" >
+    <script src="{{ url_for('static',filename='js/jquery-3.1.1.min.js') }}" defer></script>
+    <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}" defer></script>
+    <script src="https://apis.google.com/js/platform.js?onload=start" defer></script>
+    <script src="{{ url_for('static',filename='js/custom.js') }}" defer></script>
+
+  </head>
+  <body>
+    <header>
+      <div class="row">
+        <div class="col-xs-8">
+          <h1 class="title">Item Catalog</h1>
+        </div>
+        <div class="col-xs-4 text-right">
+          <a href="{{url_for('categories')}}" class="btn btn-default btn-top-btm btn-lg" id="btn-home" role="button" data-toggle="tooltip" data-placement="bottom" title="Home"><span class="glyphicon glyphicon-home"></span></a>
+          <a href="#" class="btn btn-default btn-top-btm btn-lg" id="btn-login" role="button" data-toggle="tooltip" data-placement="bottom" title="Login/Logout" disabled>Login</a>
+        </div>
+      </div>
+    </header>
+
+
+    <main>
+      <!-- Displays any "flash" messages from Python server -->
+      <!-- Shown as Bootstrap dismissible alert -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert alert-success alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          {% for message in messages %}
+            <span class="flash-message">{{message}}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      <div class="row">
+        <section>
+          <div class="list-group col-xs-12">
+            <h3>Login</h3>
+            <p>
+              Please login using a provider below:
+            </p>
+            <!-- Google button -->
+            <!-- REMOVE data-approvalprompt="force" IN PRODUCTION -->
+            <div id="signInButton">
+              <span class="g-signin"
+                data-scope="openid email"
+                data-clientid="1067271013030-tndmgief43quj5rs869388150q8u4hds.apps.googleusercontent.com"
+                data-redirecturi="postmessage"
+                data-accesstype="offline"
+                data-cookiepolicy="single_host_origin"
+                data-callback="signInCallback"
+                data-approvalprompt="force">
+              </span>
+            </div>
+
+            <!-- Facebook button -->
+            <button>
+              <fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
+                <a href='javascript:sendTokenToServer()'>Login with Facebook</a>
+              </fb:login-button>
+            </button>
+            <div id="result"></div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Google OAuth sign-in JS function  -->
+    <script>
+      /**
+      * @description Use ajax POST to send Google one-time-code to server. Server get's access token.  If successful, return to index
+      */
+      function signInCallback(authResult) {
+        // Check if one-time-code is there
+        if (authResult['code']) {
+          // Hide the sign-in button now that the user is authorized
+          $('#signinButton').attr('style', 'display: none');
+          // Send the one-time-use code to the server,
+          // if the server responds, write a 'login successful' message to the web page and then redirect back to index
+          $.ajax({
+            type: 'POST',
+            url: '/gconnect?state={{STATE}}',
+            processData: false,
+            data: authResult['code'],
+            contentType: 'application/octet-stream; charset=utf-8',
+            success: function(result) {
+              // Handle or verify the server response if necessary.
+              if (result) {
+                $('#result').html('<div class="alert alert-success alert-dismissible" role="alert">' +
+                                  '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                                  '<span aria-hidden="true">&times;</span>' +
+                                  '</button>' +
+                                  '<span class="flash-message">Login Successful!</br>' + result + '</br>Redirecting...</span>' +
+                                  '</div>')
+               setTimeout(function() {window.location.href = "/";}, 4000);
+              }
+              else if (authResult['error']) {
+                $('#result').html('<div class="alert alert-success alert-dismissible" role="alert">' +
+                                  '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                                  '<span aria-hidden="true">&times;</span>' +
+                                  '</button>' +
+                                  '<span class="flash-message">There was an authentication error: ' + authResult['error'] + '</span>' +
+                                  '</div>')
+              }
+              else {
+                $('#result').html('<div class="alert alert-success alert-dismissible" role="alert">' +
+                                  '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                                  '<span aria-hidden="true">&times;</span>' +
+                                  '</button>' +
+                                  '<span class="flash-message">Failed to make a server-side call. Check your configuration and console.</span>' +
+                                  '</div>')
+              }
+            }
+          });
+        }
+      }
+    </script>
+
+    <!-- Facebook OAuth sign-in JS function  -->
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '1290234471032687', // Facebook registered appp ID here
+          cookie     : true,  // enable cookies to allow the server to access the session
+          xfbml      : true,  // parse social plugins on this page
+          version    : 'v2.2' // use version 2.2
+        });
+      };
+
+
+      /**
+      * @description Load Facebook SDK asynchronously
+      */
+      (function(d, s, id) {
+          var js, fjs = d.getElementsByTagName(s)[0];
+          if (d.getElementById(id)) return;
+          js = d.createElement(s); js.id = id;
+          js.src = "//connect.facebook.net/en_US/sdk.js";
+          fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+      /**
+      * @description Use ajax POST to send FB token to the server. If successful, return to index. See statusChangeCallback() for when this call is made.
+      */
+      function sendTokenToServer() {
+        var access_token = FB.getAuthResponse()['accessToken'];
+        FB.api('/me', function(response) {
+         $.ajax({
+            type: 'POST',
+            url: '/fbconnect?state={{STATE}}',
+            processData: false,
+            data: access_token,
+            contentType: 'application/octet-stream; charset=utf-8',
+            success: function(result) {
+              // Handle or verify the server response if necessary.
+              if (result) {
+                $('#result').html('<div class="alert alert-success alert-dismissible" role="alert">' +
+                                  '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                                  '<span aria-hidden="true">&times;</span>' +
+                                  '</button>' +
+                                  '<span class="flash-message">Login Successful!</br>' + result + '</br>Redirecting...</span>' +
+                                  '</div>')
+               setTimeout(function() {window.location.href = "/";}, 4000);
+
+             } else {
+               $('#result').html('<div class="alert alert-success alert-dismissible" role="alert">' +
+                                 '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                                 '<span aria-hidden="true">&times;</span>' +
+                                 '</button>' +
+                                 '<span class="flash-message">Failed to make a server-side call. Check your configuration and console.</span>' +
+                                 '</div>')
+             }
+            }
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

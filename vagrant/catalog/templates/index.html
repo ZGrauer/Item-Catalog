@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catalog">
+    <title class="name">Item Catalog</title>
+    <link rel="stylesheet" href= "{{ url_for('static',filename='css/bootstrap.min.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
+    <link rel="stylesheet" href= "{{ url_for('static',filename='css/style.css') }}" >
+    <script src="{{ url_for('static',filename='js/jquery-3.1.1.min.js') }}" defer></script>
+    <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}" defer></script>
+    <script src="{{ url_for('static',filename='js/custom.js') }}" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="row">
+        <div class="col-xs-8">
+          <h1 class="title">Item Catalog</h1>
+        </div>
+        <div class="col-xs-4 text-right">
+          <a href="#" class="btn btn-default btn-top-btm btn-lg" id="btn-home" role="button" data-toggle="tooltip" data-placement="bottom" title="On home" disabled><span class="glyphicon glyphicon-home"></span></a>
+          <!-- if not logged in, display "login" button -->
+          <!-- else show the user's profile pic as logout button -->
+          {% if "username" not in login_session %}
+            <a href="{{url_for('showLogin')}}" class="btn btn-default btn-top-btm btn-lg" id="btn-login" role="button" data-toggle="tooltip" data-placement="bottom" title="Login">Login</a>
+          {% else %}
+            <a href="{{url_for('disconnect')}}" data-toggle="tooltip" data-placement="bottom" title="Logout">
+              <img src="{{login_session['picture']}}" class="user-img" alt="User's Profile Picture"/>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Displays any "flash" messages from Python server -->
+      <!-- Shown as Bootstrap dismissible alert -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert alert-success alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          {% for message in messages %}
+            <span class="flash-message">{{message}}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      <div class="row">
+        <section>
+          <div class="list-group col-xs-5">
+            <h3>Categories
+              <!-- display new category button only if logged in -->
+              {% if "username" in login_session %}
+                <a href="{{url_for('newCategory')}}" class="btn btn-primary btn-sm btn-top-btm" role="button" data-toggle="tooltip" title="Create New Category"><span class="glyphicon glyphicon-plus"></span></a>
+              {% endif %}
+            </h3>
+            <!-- list all categories on left -->
+            {% for c in categories %}
+              <div class="row">
+                <div class="col-md-12 category-list">
+                  <a href="{{url_for('items', category_id = c.id)}}" class="list-group-item list-group-item-action" data-toggle="tooltip" title="List Items">
+                    <strong>{{c.name}}</strong>
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+        <section>
+          <div class="list-group col-xs-7">
+            <h3>Newest Items</h3>
+            <!-- list last 10 items added on right -->
+            {% for item in new_items %}
+              <div class="row">
+                <div class="col-md-12 category-list">
+                  <a href="{{url_for('viewItem', category_id = item.category_id, item_id = item.id)}}" class="list-group-item list-group-item-action" data-toggle="tooltip" title="View Item">
+                    <strong>{{item.name}}</strong><span class="text-muted"> ({{item.category.name}})</span>
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
