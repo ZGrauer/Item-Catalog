@@ -2,7 +2,7 @@
 ----
 
 ## What is it?
-Allows users to register and login using OAuth2 providers Google & Facebook so they can create lists of items in distict categories.  All categories and items are viewable but they can only be added to, edited, or deleted by the user who created them.
+Allows users to register and login using OAuth2 providers Google & Facebook so they can create lists of items in distinct categories.  All categories and items are viewable but they can only be added to, edited, or deleted by the user who created them.
 
 The web server is written in [Python](https://www.python.org/) using [Flask](http://flask.pocoo.org/) framework and the database uses [SQLite](https://sqlite.org/).
 
